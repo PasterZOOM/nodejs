@@ -11,8 +11,7 @@ export const productsRepository = {
     async findProductById(id: number): Promise<ProductType | null> {
         return await productsCollection.findOne({id})
     },
-    async createProduct(title: string): Promise<ProductType> {
-        const newProduct = {id: +(new Date()), title}
+    async createProduct(newProduct: ProductType): Promise<ProductType> {
         await productsCollection.insertOne(newProduct)
 
         return newProduct
