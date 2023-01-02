@@ -11,8 +11,8 @@ export const productsRepository = {
 
         return products.filter(product => product.title.match(searchTerm))
     },
-    async findProductById(id: number): Promise<ProductType | undefined> {
-        return products.find(el => el.id === id)
+    async findProductById(id: number): Promise<ProductType | null> {
+        return products.find(el => el.id === id) ?? null
     },
     async createProduct(title: string): Promise<ProductType> {
         const newProduct = {id: +(new Date()), title}

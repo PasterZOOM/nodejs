@@ -1,7 +1,8 @@
 import {Request, Response, Router} from 'express'
-import {productsRepository, ProductType} from "../repositories/products-repository";
 import {body} from "express-validator";
+import {productsRepository} from "../repositories/products-db-repository";
 import {inputValidationMiddlewares} from "../middlewares/input-validation-middlewares";
+import {ProductType} from "../repositories/db";
 
 export const productsRouter = Router({})
 const titleValidation = body('title').trim().isLength({
@@ -15,7 +16,7 @@ productsRouter.get('/', async (req: Request, res: Response) => {
     res.send(fontProducts)
 })
 productsRouter.get('/:id', async (req: Request, res: Response) => {
-    const product: ProductType | undefined = await productsRepository.findProductById(+req.params.id)
+    const product: ProductType | null = await productsRepository.findProductById(+req.params.id)
 
     if (!product) res.send(404)
     res.send(product)
@@ -26,7 +27,7 @@ productsRouter.post('/',
     async (req: Request, res: Response) => {
         const newProduct: ProductType = await productsRepository.createProduct(req.body.title)
 
-        res.status(201).send(newProduct)
+        return res.status(201).send(newProduct)
     })
 productsRouter.put('/:id',
     titleValidation,
@@ -34,16 +35,18 @@ productsRouter.put('/:id',
     async (req: Request, res: Response) => {
         const id = +req.params.id;
         const isUpdated: boolean = await productsRepository.updateProduct(id, req.body.title)
-
         if (isUpdated) {
-            const product = productsRepository.findProductById(id)
-            res.send(product)
+            const product = await productsRepository.findProductById(id)
+
+            return res.send(product)
         }
-        res.send(404)
+
+        return res.send(404)
     })
 productsRouter.delete('/:id', async (req: Request, res: Response) => {
     const isDeleted: boolean = await productsRepository.deleteProduct(+req.params.id)
 
-    if (!isDeleted) res.send(404)
-    res.send(204)
+    if (!isDeleted) return res.send(404)
+
+    return res.send(204)
 })
