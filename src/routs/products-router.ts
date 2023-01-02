@@ -1,6 +1,6 @@
 import {Request, Response, Router} from 'express'
-import {productsRepository} from "../repositories/products-repository";
-import {body, validationResult} from "express-validator";
+import {productsRepository, ProductType} from "../repositories/products-repository";
+import {body} from "express-validator";
 import {inputValidationMiddlewares} from "../middlewares/input-validation-middlewares";
 
 export const productsRouter = Router({})
@@ -9,13 +9,13 @@ const titleValidation = body('title').trim().isLength({
     max: 255
 }).withMessage('Title length must be from 3 to 255 symbols')
 
-productsRouter.get('/', (req: Request, res: Response) => {
-    const fontProducts = productsRepository.findProducts(req.query.title?.toString())
+productsRouter.get('/', async (req: Request, res: Response) => {
+    const fontProducts: ProductType[] = await productsRepository.findProducts(req.query.title?.toString())
 
     res.send(fontProducts)
 })
-productsRouter.get('/:id', (req: Request, res: Response) => {
-    const product = productsRepository.findProductById(+req.params.id)
+productsRouter.get('/:id', async (req: Request, res: Response) => {
+    const product: ProductType | undefined = await productsRepository.findProductById(+req.params.id)
 
     if (!product) res.send(404)
     res.send(product)
@@ -23,27 +23,17 @@ productsRouter.get('/:id', (req: Request, res: Response) => {
 productsRouter.post('/',
     titleValidation,
     inputValidationMiddlewares,
-    (req: Request, res: Response) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            res.status(400).json({errors: errors.array()});
-        }
-
-        const newProduct = productsRepository.createProduct(req.body.title)
+    async (req: Request, res: Response) => {
+        const newProduct: ProductType = await productsRepository.createProduct(req.body.title)
 
         res.status(201).send(newProduct)
     })
 productsRouter.put('/:id',
     titleValidation,
     inputValidationMiddlewares,
-    (req: Request, res: Response) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            res.status(400).json({errors: errors.array()});
-        }
-
+    async (req: Request, res: Response) => {
         const id = +req.params.id;
-        const isUpdated = productsRepository.updateProduct(id, req.body.title)
+        const isUpdated: boolean = await productsRepository.updateProduct(id, req.body.title)
 
         if (isUpdated) {
             const product = productsRepository.findProductById(id)
@@ -51,8 +41,8 @@ productsRouter.put('/:id',
         }
         res.send(404)
     })
-productsRouter.delete('/:id', (req: Request, res: Response) => {
-    const isDeleted = productsRepository.deleteProduct(+req.params.id)
+productsRouter.delete('/:id', async (req: Request, res: Response) => {
+    const isDeleted: boolean = await productsRepository.deleteProduct(+req.params.id)
 
     if (!isDeleted) res.send(404)
     res.send(204)

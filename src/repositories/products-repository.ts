@@ -1,21 +1,26 @@
-let products = [{id: 1, title: 'tomato'}, {id: 2, title: 'orange'}]
+export type ProductType = {
+    id: number;
+    title: string;
+}
+
+let products: ProductType[] = [{id: 1, title: 'tomato'}, {id: 2, title: 'orange'}]
 
 export const productsRepository = {
-    findProducts(searchTerm: string | null | undefined) {
+    async findProducts(searchTerm: string | null | undefined): Promise<ProductType[]> {
         if (!searchTerm) return products
 
         return products.filter(product => product.title.match(searchTerm))
     },
-    findProductById(id: number) {
+    async findProductById(id: number): Promise<ProductType | undefined> {
         return products.find(el => el.id === id)
     },
-    createProduct(title: string) {
+    async createProduct(title: string): Promise<ProductType> {
         const newProduct = {id: +(new Date()), title}
         products.push(newProduct)
 
         return newProduct
     },
-    updateProduct(id: number, title: string) {
+    async updateProduct(id: number, title: string): Promise<boolean> {
         const product = products.find(el => el.id === id)
 
         if (product) {
@@ -24,7 +29,7 @@ export const productsRepository = {
         }
         return false
     },
-    deleteProduct(id: number) {
+    async deleteProduct(id: number): Promise<boolean> {
         const arrayLength = products.length
         products = products.filter(p => p.id !== id)
 
